@@ -21,6 +21,12 @@ LIB_OBJECTS = $(LIB_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(OBJ_DIR)/$(SRC_DIR)/%.o)
 
 DEPS = $(APP_OBJECTS:.o=.d) $(LIB_OBJECTS:.o=.d)
 
+test_name = test
+test_path = bin/$(test_name)
+
+test_sources = $(shell find test/ -name '*.c')
+test_objects = $(test_sources:test/%.cpp=obj/test/%.o)
+
 .PHONY: all
 all: $(APP_PATH)
 
@@ -40,3 +46,9 @@ clean:
 	$(RM) $(APP_PATH) $(LIB_PATH)
 	find $(OBJ_DIR) -name '*.o' -exec $(RM) '{}' \;
 	find $(OBJ_DIR) -name '*.d' -exec $(RM) '{}' \;
+
+.PHONY: test
+test: $(test_path)
+
+$(test_path): $(test_objects) $(LIB_PATH)
+	gcc $(CFLAGS) $(CPPFLAGS) -I thirdparty $^ -o $@
