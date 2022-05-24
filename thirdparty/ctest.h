@@ -471,22 +471,22 @@ static void color_print(const char* color, const char* text) {
         printf("%s\n", text);
 }
 
-#ifdef CTEST_SEGFAULT
-#include <signal.h>
-static void sighandler(int signum)
-{
-    const char msg_color[] = ANSI_BRED "[SIGSEGV: Segmentation fault]" ANSI_NORMAL "\n";
-    const char msg_nocolor[] = "[SIGSEGV: Segmentation fault]\n";
+// #ifdef CTEST_SEGFAULT
+// #include <signal.h>
+// static void sighandler(int signum)
+// {
+//     const char msg_color[] = ANSI_BRED "[SIGSEGV: Segmentation fault]" ANSI_NORMAL "\n";
+//     const char msg_nocolor[] = "[SIGSEGV: Segmentation fault]\n";
 
-    const char* msg = color_output ? msg_color : msg_nocolor;
-    write(STDOUT_FILENO, msg, strlen(msg));
+//     const char* msg = color_output ? msg_color : msg_nocolor;
+//     write(STDOUT_FILENO, msg, strlen(msg));
 
-    /* "Unregister" the signal handler and send the signal back to the process
-     * so it can terminate as expected */
-    signal(signum, SIG_DFL);
-    kill(getpid(), signum);
-}
-#endif
+//     /* "Unregister" the signal handler and send the signal back to the process
+//      * so it can terminate as expected */
+//     signal(signum, SIG_DFL);
+//     kill(getpid(), signum);
+// }
+// #endif
 
 int ctest_main(int argc, const char *argv[]);
 
@@ -499,9 +499,9 @@ __attribute__((no_sanitize_address)) int ctest_main(int argc, const char *argv[]
     static int idx = 1;
     static ctest_filter_func filter = suite_all;
 
-#ifdef CTEST_SEGFAULT
-    signal(SIGSEGV, sighandler);
-#endif
+// #ifdef CTEST_SEGFAULT
+//     signal(SIGSEGV, sighandler);
+// #endif
 
     if (argc == 2) {
         suite_name = argv[1];
