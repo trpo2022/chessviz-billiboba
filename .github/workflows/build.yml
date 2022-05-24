@@ -26,3 +26,6 @@ jobs:
 
       - name: Test application
         run: make test
+  
+      - name: Test run
+        run: make test_run
