@@ -1,14 +1,20 @@
 APP_NAME = chess
 LIB_NAME = libchess
+TEST_NAME = chess-test
+
 CC = gcc
+
 CFLAGS = -Wall -Wextra -Werror
 CPPFLAGS =  -I source -MP -MMD 
+CPPFLAGST = -I thirdparty -MP -MMD
 
 BIN_DIR = bin
 OBJ_DIR = obj
 SRC_DIR = source
+TEST_DIR = test
 
 APP_PATH = $(BIN_DIR)/$(APP_NAME)
+TEST_PATH = $(BIN_DIR)/$(TEST_NAME)
 LIB_PATH = $(OBJ_DIR)/$(SRC_DIR)/$(LIB_NAME)/$(LIB_NAME).a
 
 SRC_EXT = c
@@ -19,13 +25,11 @@ APP_OBJECTS = $(APP_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(OBJ_DIR)/$(SRC_DIR)/%.o)
 LIB_SOURCES = $(shell find $(SRC_DIR)/$(LIB_NAME) -name '*.$(SRC_EXT)')
 LIB_OBJECTS = $(LIB_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(OBJ_DIR)/$(SRC_DIR)/%.o)
 
+
+TEST_SOURCES = $(shell find $(TEST_DIR) -name '*.$(SRC_EXT)')
+TEST_OBJECTS = $(TEST_SOURCES:$(TEST_DIR)/%.$(SRC_EXT)=$(OBJ_DIR)/$(TEST_DIR)/%.o)
+
 DEPS = $(APP_OBJECTS:.o=.d) $(LIB_OBJECTS:.o=.d)
-
-test_name = test
-test_path = bin/$(test_name)
-
-test_sources = $(shell find test/ -name '*.c')
-test_objects = $(test_sources:test/%.cpp=obj/test/%.o)
 
 .PHONY: all
 all: $(APP_PATH)
@@ -39,7 +43,7 @@ $(LIB_PATH): $(LIB_OBJECTS)
 	ar rcs $@ $^
 
 $(OBJ_DIR)/%.o: %.c
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(CPPFLAGST) $< -o $@
 
 .PHONY: clean
 clean:
@@ -48,7 +52,18 @@ clean:
 	find $(OBJ_DIR) -name '*.d' -exec $(RM) '{}' \;
 
 .PHONY: test
-test: $(test_path)
+test: $(TEST_PATH)
 
-$(test_path): $(test_objects) $(LIB_PATH)
-	gcc $(CFLAGS) $(CPPFLAGS) -I thirdparty $^ -o $@
+-include $(DEPS)
+
+$(TEST_PATH): ./obj/test/main.o ./obj/test/lib_test.o ./obj/source/libchess/libchess.a
+	$(CC) $(CFLAGS) -o $@ $^
+
+./obj/test/main.o: ./test/main.c
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(CPPFLAGST) $< -o $@
+
+./obj/test/lib_test.o: ./test/tests.c 
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(CPPFLAGST) $< -o $@
+
+test_run: $(TEST_PATH)
+	./$(TEST_PATH)
